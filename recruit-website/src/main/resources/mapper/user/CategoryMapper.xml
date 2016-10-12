@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="user">
+   <resultMap id="userMap" type="org.mx.dal.client.model.UserInfo">
+	<result property="id" column="id" />
+	<result property="num" column="name" />
+	<result property="nickName" column="nickName" />
+   </resultMap>
+   <!-- 类目 -->
+	<sql id="categoryQuerystr">
+	  id,code,name,level,parentId,status,lastUser,commTypeStr,sortNo,description,deleteFlag,createTime,updateTime,isChild
+    </sql>
+   <select id="queryById" parameterType="String" resultMap="userMap">
+        select * from  t_user  where  num=#{num}
+    </select>
+</mapper>

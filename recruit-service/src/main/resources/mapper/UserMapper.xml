@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="User">
+   <resultMap id="userMap" type="com.lishi.recruit.dal.user.model.Users">
+		<result property="userid" column="userid" />
+		<result property="logincode" column="logincode" />
+		<result property="password" column="password" />
+		<result property="username" column="username" />
+		<result property="state" column="state" />
+		<result property="bz" column="bz" />
+   </resultMap>
+   <resultMap id="vusermenuMap" type="com.lishi.recruit.dal.user.model.VuserMenu">
+		<result property="userid" column="userid" />
+		<result property="logincode" column="logincode" />
+		<result property="username" column="username" />
+		<result property="menuid" column="menuid" />
+		<result property="menuname" column="menuname" />
+		<result property="pid" column="pid" />
+		<result property="menuurl" column="menuurl" />
+		<result property="menutype" column="menutype" />
+		<result property="ordernum" column="ordernum" />
+		<result property="icon" column="icon" />
+   </resultMap>
+   <!-- 类目 -->
+	<sql id="usercondition">
+	  userid,logincode,password,username,state,bz
+    </sql>
+   <select id="login" parameterType="com.lishi.recruit.dal.user.model.Users" resultMap="userMap">
+       select <include refid="usercondition" /> from t_mgt_user t where t.logincode =#{logincode}
+    </select>
+   <select id="queryMenuList" parameterType="com.lishi.recruit.dal.user.model.Users" resultMap="vusermenuMap">
+      SELECT userid,logincode,username,e.menuid as menuid,menuname,pid,menuurl,menutype,ordernum,icon from t_mgt_menu e,t_mgt_rolemenu r,t_mgt_user u WHERE e.menuid=r.menuid AND r.roleid = u.roleid AND u.userid=#{userid}
+    </select>
+    <select id="queryList" parameterType="java.util.HashMap" resultMap="userMap">
+      select <include refid="usercondition" /> from t_mgt_user order by userid limit #{start},#{limit}
+    </select>
+    <select id="queryTotalCount" parameterType="java.util.HashMap" resultType="int">
+      select count(1) from t_mgt_user 
+    </select>
+</mapper>
