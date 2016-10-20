@@ -4,7 +4,7 @@
  * CreateTime: Jan 28, 2011 11:16:29 AM 
  * Description:Excel数据读取工具类，POI实现，兼容Excel2003，及Excel2007 
  **/  
-package com.lishi.recruit.excel;  
+package com.lishi.recruit.excel.reader;  
   
 import java.io.FileInputStream;  
 import java.io.FileNotFoundException;  
