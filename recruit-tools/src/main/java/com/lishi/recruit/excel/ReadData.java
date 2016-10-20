@@ -144,7 +144,7 @@ public class ReadData {
 	     
 	    public static void main(String argv[]){
 	        String filePath = "D:/temp/9.xlsx";
-	        Example exmple=new Example(filePath);
+	        ExcelReader exmple=new ExcelReader(filePath);
 	        List<String[]> list= exmple.getAllData(0);
 //	        handleHdwOrder(list);
 //	        handleZfb(list);
