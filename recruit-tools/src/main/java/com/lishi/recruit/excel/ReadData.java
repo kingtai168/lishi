@@ -3,19 +3,23 @@ package com.lishi.recruit.excel;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.lishi.recruit.excel.model.MergeReport;
+import com.lishi.recruit.excel.writer.service.ExcelWriter;
+import com.lishi.recruit.excel.writer.service.impl.ExcelPoiWriterImpl;
+import com.lishi.recruit.excel.writer.utils.Bean2MAP;
+import com.lishi.recruit.tools.DateTimeUtil;
 import com.lishi.recruit.tools.StringUtil;
  
 public class ReadData {
@@ -142,18 +146,6 @@ public class ReadData {
 		 return null;
 	 }
 	     
-	    public static void main(String argv[]){
-	        String filePath = "D:/temp/9.xlsx";
-	        ExcelReader exmple=new ExcelReader(filePath);
-	        List<String[]> list= exmple.getAllData(0);
-//	        handleHdwOrder(list);
-//	        handleZfb(list);
-//	        handleYfj(list);
-	        handleWx(list);
-	      
-	      
-	    }
-	    
 	    /**
 	     * 处理海捣网订单
 	     * @param list
@@ -393,6 +385,73 @@ public class ReadData {
 	    	  }  
 	    	 }  
 	    	
+	    }
+	    
+	    /**
+	     * 保存错误数据
+	     * 向excel插入数据，生成临时文件
+	     * @throws Exception 
+	     */
+	    private static String saveErrorToExcel(List<MergeReport> mergeReportlist) throws Exception {
+	    	String temp_fileName = "";
+	    	if(StringUtil.isNotEmpty(mergeReportlist)){
+				List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+				for(MergeReport eor:mergeReportlist){
+					Map<String, Object> map = new HashMap<String, Object>();
+					Bean2MAP.addObject2Map(eor, map);
+					result.add(map);
+				}
+				HashMap root = new HashMap();
+				root.put("list", result);
+				
+				/**
+				 * 根据模板生成临时文件并导出文件
+				 */
+				ExcelWriter writer = new ExcelPoiWriterImpl();
+				
+				//模板路径
+//				String rootPath = this.getRequest().getSession().getServletContext().getRealPath("/");
+//				String template_path = rootPath + "excelTemplate/";
+				//模板名称
+				String template_fileName ="D:/temp/orderTemplate.xls";
+				
+				//临时文件命名
+				temp_fileName = "D:/temp/order_"+DateTimeUtil.getymdhmsCurrentTimeString()+".xls";
+				//生成临时报表文件
+				writer.genarateFile(template_fileName,temp_fileName, root);
+			}
+	    	return temp_fileName;
+		}
+	    
+	    public static void main(String argv[]){
+//	        String filePath = "D:/temp/9.xlsx";
+//	        ExcelReader exmple=new ExcelReader(filePath);
+//	        List<String[]> list= exmple.getAllData(0);
+//	        handleHdwOrder(list);
+//	        handleZfb(list);
+//	        handleYfj(list);
+//	        handleWx(list);
+	    	//
+	    	
+	      try {
+	    	  List<MergeReport> mergeReportlist=new ArrayList<MergeReport>();
+	    	  MergeReport report= new MergeReport();
+	    	  report.setHdwOrderId("123");
+	    	  report.setHdwReMoney("22.2");
+	    	  report.setWxOrderId("123");
+	    	  report.setWxReMoney("22.2");
+	    	  report.setYfjOrderId("123");
+	    	  report.setYfjReMoney("22.2");
+	    	  report.setZfbOrderId("123");
+	    	  report.setZfbReMoney("22.2");
+	    	  report.setMessage("测试用!");
+	    	  mergeReportlist.add(report);
+			saveErrorToExcel(mergeReportlist);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	      
 	    }
 	    
 	    
