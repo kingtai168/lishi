@@ -53,11 +53,29 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>dispatcher</servlet-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>*.do</url-pattern>
 	</servlet-mapping>
+   <!-- session超时时间（分钟） -->
+  <session-config>
+    <session-timeout>600</session-timeout>
+  </session-config>
 	<welcome-file-list>
-		<welcome-file>index.html</welcome-file>
+		<welcome-file>/index.html</welcome-file>
 	</welcome-file-list>
-
+   <!--  服务器异常  -->
+  <error-page>
+    <error-code>500</error-code>
+    <location>/commons/error.html</location>
+  </error-page>
+  <!-- 找不到资源  -->
+  <error-page>
+    <error-code>404</error-code>
+    <location>/commons/404.html</location>
+  </error-page>
+  <!--  没有权限访问资源 -->
+  <error-page>
+    <error-code>403</error-code>
+    <location>/commons/403.html</location>
+  </error-page>
 	
 </web-app>
