@@ -19,6 +19,8 @@ public class MergeReport {
 	private String yfjReMoney;//易汇金收款
 	
 	private String message;//信息
+	
+	private String isZf;
 
 	public String getHdwOrderId() {
 		return hdwOrderId;
@@ -90,6 +92,14 @@ public class MergeReport {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	public String getIsZf() {
+		return isZf;
+	}
+
+	public void setIsZf(String isZf) {
+		this.isZf = isZf;
 	}
 	
 	
