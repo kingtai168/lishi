@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.lishi.recruit.excel.model.MergeReport;
+import com.lishi.recruit.excel.model.Order;
 import com.lishi.recruit.excel.writer.service.ExcelWriter;
 import com.lishi.recruit.excel.writer.service.impl.ExcelPoiWriterImpl;
 import com.lishi.recruit.excel.writer.utils.Bean2MAP;
@@ -273,11 +275,12 @@ public class ReadData {
 	    					System.out.println("--->"+str[7]);
 	    					if(!str[15].equals("0")&&!str[15].equals(""))
 	    					{
-	    						pst = con.prepareStatement("insert into t_yfj_temp(orderId,reMoney) values(?,?)");
+	    						pst = con.prepareStatement("insert into t_yfj_temp(orderId,yfjOrderId,reMoney) values(?,?,?)");
 	    						String orderNumLong = str[13];
 	    						String orderNum =orderNumLong.split("_")[0];
 	    						pst.setString(1, orderNum);
-	    						pst.setDouble(2, Double.valueOf(str[15]));
+	    						pst.setString(2, orderNumLong);
+	    						pst.setDouble(3, Double.valueOf(str[15]));
 	    						Boolean isFalse =  pst.execute();
 	    						System.out.println("是否执行成功-->"+str[0]+"------>"+isFalse);
 	    					}
@@ -422,31 +425,216 @@ public class ReadData {
 			}
 	    	return temp_fileName;
 		}
+	    /**
+	     * 保存错误数据
+	     * 向excel插入数据，生成临时文件
+	     * @throws Exception 
+	     */
+	    private static String saveErrorToExcel(List<MergeReport> mergeReportlist,String srcFileName,String targetFileName) throws Exception {
+	    	String temp_fileName = "";
+	    	if(StringUtil.isNotEmpty(mergeReportlist)){
+	    		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+	    		for(MergeReport eor:mergeReportlist){
+	    			Map<String, Object> map = new HashMap<String, Object>();
+	    			Bean2MAP.addObject2Map(eor, map);
+	    			result.add(map);
+	    		}
+	    		HashMap root = new HashMap();
+	    		root.put("list", result);
+	    		
+	    		/**
+	    		 * 根据模板生成临时文件并导出文件
+	    		 */
+	    		ExcelWriter writer = new ExcelPoiWriterImpl();
+	    		
+	    		//模板路径
+//				String rootPath = this.getRequest().getSession().getServletContext().getRealPath("/");
+//				String template_path = rootPath + "excelTemplate/";
+	    		//模板名称
+//	    		String template_fileName ="D:/temp/orderHwdMainTemplate.xls";
+//	    		
+//	    		//临时文件命名
+//	    		temp_fileName = "D:/temp/hwdMainOrder_"+DateTimeUtil.getymdhmsCurrentTimeString()+".xls";
+	    		//生成临时报表文件
+	    		writer.genarateFile(srcFileName,targetFileName, root);
+	    	}
+	    	return temp_fileName;
+	    }
 	    
-	    public static void main(String argv[]){
-//	        String filePath = "D:/temp/9.xlsx";
-//	        ExcelReader exmple=new ExcelReader(filePath);
-//	        List<String[]> list= exmple.getAllData(0);
-//	        handleHdwOrder(list);
-//	        handleZfb(list);
-//	        handleYfj(list);
-//	        handleWx(list);
-	    	//
+	    
+	    public static void mainZfOrder()
+	    {
+	    	List<Order> orderList= new ArrayList<Order>();
+	    	List<MergeReport> mergeReportList = new ArrayList<MergeReport>();
+	    	Order order = null;
+	    	try {
+		    	  Connection con = getConnection();
+		    	  PreparedStatement  pst =null;
+		    	  pst = con.prepareStatement("SELECT * FROM t_zf_total_temp");
+		    	  ResultSet result =  pst.executeQuery();
+		    	  while(result.next()) {
+	    		     order = new Order();
+		    		 String orderId= result.getString("orderId");
+		    		 String yfjOrderId= result.getString("yfjOrderId");
+		    		 Double reMoney = result.getDouble("reMoney");
+		    		 String flag= result.getString("flag");
+		    		 order.setOrderId(orderId);
+		    		 order.setFlag(flag);
+		    		 order.setYfjOrderId(yfjOrderId);
+		    		 order.setReMoney(reMoney);
+		    		 orderList.add(order);
+		    		  
+		    	  }
+		    	  if(null!=orderList&&!orderList.isEmpty())
+		    	  {
+			    		  for (Order temp : orderList) {
+			    			  MergeReport mergeReport = new MergeReport();
+			    			  String isOrder ="N";
+			    			  List<Order> hdwList= new ArrayList<Order>();
+			    			  //根据hdw订单查询支付
+			    			  pst = con.prepareStatement("SELECT * FROM t_hdw_temp where orderId = ? and reMoney=?");
+			    			  pst.setString(1, temp.getOrderId());
+			    			  pst.setDouble(2, temp.getReMoney());
+			    			  ResultSet result1 =  pst.executeQuery();
+			    			  while(result1.next()) {
+		    				      order = new Order();
+		    		    		 String orderId= result1.getString("orderId");
+		    		    		 Double reMoney = result1.getDouble("reMoney");
+		    		    		 order.setOrderId(orderId);
+		    		    		 order.setReMoney(reMoney);
+		    		    		
+		    		    		 
+		    		    		 hdwList.add(order);
+		    			  }
+		    			  mergeReport.setZfbOrderId(temp.getOrderId());
+		    			  mergeReport.setZfbReMoney(temp.getReMoney().toString());
+		    			  if(null!=hdwList&&!hdwList.isEmpty())
+		    			  {
+		    				  Order ord=hdwList.get(0);
+		    				  String orderId= ord.getOrderId();
+		    		    	  Double reMoney = ord.getReMoney();
+		    		    	  mergeReport.setHdwOrderId(orderId);
+		    		    	  mergeReport.setHdwReMoney(reMoney.toString());
+		    		    	 
+		    		    	  isOrder="Y";
+		    			  }else
+		    			  {
+		    				  mergeReport.setMessage("海捣网明细报表没查询到数据！");
+		    			  }
+		    			  //设置 wxReMoney--支付方式
+		    			  mergeReport.setWxReMoney(temp.getFlag());
+		    			  mergeReport.setIsZf(isOrder);
+		    			  mergeReportList.add(mergeReport);
+		    		  }
+		    	  }
+		    	  
+		    	  
+		    	  String template_fileName ="D:/temp/zfHwdMainTemplate.xls";
+		    	 //target file
+		    	 String temp_fileName = "D:/temp/支付订单_"+DateTimeUtil.getymdhmsCurrentTimeString()+".xls";
+				saveErrorToExcel(mergeReportList,template_fileName,temp_fileName);
+	    	}catch(Exception e)
+	    	{
+	    		
+	    	}
+	    }
+	    
+	    public static void main(String[] args) {
+	    	mainHdwOrder();
+	    	mainZfOrder();
+		}
+	    public static void mainHdwOrder(){
 	    	
+	    	List<Order> orderList= new ArrayList<Order>();
+	    	List<MergeReport> mergeReportList = new ArrayList<MergeReport>();
+//	    	List<String>  list= new ArrayList<String>();
+	    	
+	    	Order order = null;
 	      try {
-	    	  List<MergeReport> mergeReportlist=new ArrayList<MergeReport>();
-	    	  MergeReport report= new MergeReport();
-	    	  report.setHdwOrderId("123");
-	    	  report.setHdwReMoney("22.2");
-	    	  report.setWxOrderId("123");
-	    	  report.setWxReMoney("22.2");
-	    	  report.setYfjOrderId("123");
-	    	  report.setYfjReMoney("22.2");
-	    	  report.setZfbOrderId("123");
-	    	  report.setZfbReMoney("22.2");
-	    	  report.setMessage("测试用!");
-	    	  mergeReportlist.add(report);
-			saveErrorToExcel(mergeReportlist);
+	    	  Connection con = getConnection();
+	    	  PreparedStatement  pst =null;
+	    	  pst = con.prepareStatement("SELECT * FROM t_hdw_temp");
+	    	  ResultSet result =  pst.executeQuery();
+	    	  while(result.next()) {
+	    		  order = new Order();
+	    		 String orderId= result.getString("orderId");
+	    		 Double reMoney = result.getDouble("reMoney");
+	    		 order.setOrderId(orderId);
+	    		 order.setReMoney(reMoney);
+	    		 orderList.add(order);
+//	    		 list.add(orderId);
+	    		} 
+//	    	  System.out.println("SIZE-前->"+list.size());
+//	    	 cleanRepeatData(list);
+//	    	 System.out.println("SIZE-后->"+list.size());
+	    	  //
+	    	  if(null!=orderList&&!orderList.isEmpty())
+	    	  {
+	    		  for (Order temp : orderList) {
+	    			  MergeReport mergeReport = new MergeReport();
+	    			  String isZf ="N";//是否有支付
+	    			  List<Order> zfList= new ArrayList<Order>();
+	    			  //根据hdw订单查询支付
+	    			  pst = con.prepareStatement("SELECT * FROM t_zf_total_temp where orderId = ? and reMoney=?");
+	    			  pst.setString(1, temp.getOrderId());
+	    			  pst.setDouble(2, temp.getReMoney());
+	    			  ResultSet result1 =  pst.executeQuery();
+	    			  System.out.println("---------->");
+	    			  while(result1.next()) {
+	    				      order = new Order();
+	    		    		 String orderId= result1.getString("orderId");
+	    		    		 Double reMoney = result1.getDouble("reMoney");
+	    		    		 String flag = result1.getString("flag");
+	    		    		 String yfjOrderId = result1.getString("yfjOrderId");
+	    		    		 order.setOrderId(orderId);
+	    		    		 order.setReMoney(reMoney);
+	    		    		 order.setFlag(flag);
+	    		    		 order.setYfjOrderId(yfjOrderId);
+	    		    		 zfList.add(order);
+	    			  }
+	    			  
+	    			  mergeReport.setHdwOrderId(temp.getOrderId());
+	    			  mergeReport.setHdwReMoney(temp.getReMoney().toString());
+	    			  if(null!=zfList&&!zfList.isEmpty())
+	    			  {
+	    				  
+	    				  Order ord=zfList.get(0);
+						  String f= ord.getFlag();
+						   if(f.equals("微信支付"))
+						   {
+							   mergeReport.setWxOrderId(ord.getOrderId());
+							   mergeReport.setWxReMoney(ord.getReMoney().toString());
+						   }
+						   else if(f.equals("支付宝支付"))
+						   {
+							   mergeReport.setZfbOrderId(ord.getOrderId());
+							   mergeReport.setZfbReMoney(ord.getReMoney().toString());
+						   }
+						   else
+						   {
+							   //易汇金支付
+							   
+							   mergeReport.setYfjOrderId(ord.getYfjOrderId());
+							   mergeReport.setYfjReMoney(ord.getReMoney().toString());
+						   }
+						   isZf = "Y";
+	    			  }else
+	    			  {
+	    				  mergeReport.setMessage("没查询到支付数据!");
+	    			  }
+	    			 
+	    			  mergeReport.setIsZf(isZf);
+	    			  mergeReportList.add(mergeReport);
+				}
+	    		  
+	    		  
+	    		  
+	    	  }
+	    	  //src temp
+	    	 String template_fileName ="D:/temp/orderHwdMainTemplate.xls";
+	    	 //target file
+	    	 String temp_fileName = "D:/temp/海捣订单_"+DateTimeUtil.getymdhmsCurrentTimeString()+".xls";
+			saveErrorToExcel(mergeReportList,template_fileName,temp_fileName);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
