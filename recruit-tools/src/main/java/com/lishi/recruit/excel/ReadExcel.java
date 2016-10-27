@@ -64,6 +64,43 @@ public class ReadExcel {
        return resultList;
 	}
 
+	public List<Map<String,Object>> readExcelOrderIds(FileInputStream inputStream)throws IOException
+	{
+//		InputStream fis = inputStream;
+//		 InputStream inp = new FileInputStream(path);  
+//		Workbook wb = null;
+//	      wb = WorkbookFactory.create(inputStream);     
+		
+		
+		List<Map<String,Object>> resultList= new ArrayList<Map<String,Object>>();
+   	 //创建Excel工作薄  
+       HSSFWorkbook hwb = new HSSFWorkbook(inputStream);  
+       //得到第一个工作表  
+       HSSFSheet sheet = hwb.getSheetAt(0);  
+       HSSFRow row = null;
+       Map<String,Object> map=null;
+       //遍历该表格中所有的工作表，i表示工作表的数量 getNumberOfSheets表示工作表的总数   
+       for(int i = 0; i < hwb.getNumberOfSheets(); i++) {  
+    	   sheet = hwb.getSheetAt(i);  
+           //遍历该行所有的行,j表示行数 getPhysicalNumberOfRows行的总数  
+           for(int j = 2; j < sheet.getPhysicalNumberOfRows(); j++) {  
+               row = sheet.getRow(j);
+               String orderId = getCellValue(row.getCell(0),null);
+               map=new HashMap<String,Object>();
+               if(StringUtil.isNotEmpty(orderId))
+               {
+            	   map.put("orderId", orderId);
+               }
+               Double reMoney = Double.valueOf(getCellValue(row.getCell(2),null));
+               Double orderMoney = Double.valueOf(getCellValue(row.getCell(3),null));
+               map.put("reMoney", reMoney);
+               map.put("orderMoney", orderMoney);
+               resultList.add(map);
+           }
+       }
+       return resultList;
+	}
+
 	
 	 /**
 	   * 读取 行-单元格cell，判断格式
