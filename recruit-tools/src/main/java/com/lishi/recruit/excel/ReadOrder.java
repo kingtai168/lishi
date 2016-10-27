@@ -48,6 +48,7 @@ public class ReadOrder {
 		 ExcelReader reader = new ExcelReader("D:/temp/1.xlsx");
 		 List<String[]> list= reader.getAllData(0);
 		 List<String> orderIdList=new ArrayList<String>();
+		 List<String> sqlList=new ArrayList<String>();
 		 Connection con = getConnection();
 		 if(null!=list&&!list.isEmpty())
 		 {
@@ -72,6 +73,7 @@ public class ReadOrder {
 						Double costPrice =result.getDouble("costPrice");
 						String sql = "update shop_mall_order_detail d set d.SPS_COST_PRICE="+costPrice+"   WHERE d.SMO_ID ='"+smoId+"' and d.SMOD_STANDARD = '"+standId+"';";
 						System.out.println(sql);
+						sqlList.add(sql);
 				      }
 				  }
 				  catch(Exception ex)
@@ -79,7 +81,8 @@ public class ReadOrder {
 					  
 				  }
 			}
-			
+			System.out.println(sqlList.size());
+			ReadData.contentToTxt("D:/temp/test.txt", sqlList);
 		 }
 	}
 	 
