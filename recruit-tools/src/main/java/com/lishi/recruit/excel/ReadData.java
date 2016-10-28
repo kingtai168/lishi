@@ -51,7 +51,7 @@ public class ReadData {
 	        		   s1 += str + "\n";    
 				    }
 	           }
-	            System.out.println(s1);                                                                   
+//	            System.out.println(s1);                                                                   
 	            input.close();                                                                            
 //	            s1 += content;                                                                            
 	                                                                                                      
