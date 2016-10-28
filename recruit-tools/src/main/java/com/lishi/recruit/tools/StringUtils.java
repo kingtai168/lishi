@@ -5,7 +5,7 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -144,20 +144,20 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
 		return toLong(val).intValue();
 	}
 	
-	/**
-	 * 获得用户远程地址
-	 */
-	public static String getRemoteAddr(HttpServletRequest request){
-		String remoteAddr = request.getHeader("X-Real-IP");
-        if (isNotBlank(remoteAddr)) {
-        	remoteAddr = request.getHeader("X-Forwarded-For");
-        }else if (isNotBlank(remoteAddr)) {
-        	remoteAddr = request.getHeader("Proxy-Client-IP");
-        }else if (isNotBlank(remoteAddr)) {
-        	remoteAddr = request.getHeader("WL-Proxy-Client-IP");
-        }
-        return remoteAddr != null ? remoteAddr : request.getRemoteAddr();
-	}
+//	/**
+//	 * 获得用户远程地址
+//	 */
+//	public static String getRemoteAddr(HttpServletRequest request){
+//		String remoteAddr = request.getHeader("X-Real-IP");
+//        if (isNotBlank(remoteAddr)) {
+//        	remoteAddr = request.getHeader("X-Forwarded-For");
+//        }else if (isNotBlank(remoteAddr)) {
+//        	remoteAddr = request.getHeader("Proxy-Client-IP");
+//        }else if (isNotBlank(remoteAddr)) {
+//        	remoteAddr = request.getHeader("WL-Proxy-Client-IP");
+//        }
+//        return remoteAddr != null ? remoteAddr : request.getRemoteAddr();
+//	}
 
 	/**
 	 * 驼峰命名法工具
